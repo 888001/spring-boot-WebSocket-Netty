@@ -1,16 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.config.NettyConfig;
+import com.sun.xml.internal.bind.v2.TODO;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.channel.*;
+import io.netty.channel.group.ChannelMatchers;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
 
@@ -25,7 +21,9 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
     //客户端与服务端创建链接的时候调用
     @Override
     public void channelActive (ChannelHandlerContext context)throws Exception{
-        NettyConfig.group.add(context.channel());
+
+        //NettyConfig.group.add(context.channel());
+
         System.out.println("客户端与服务端连接开启");
     }
     //客户端与服务端断开连接的时候调用
@@ -37,6 +35,9 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
     //服务端接收客户端发送过来的数据结束之后调用
     @Override
     public void channelReadComplete(ChannelHandlerContext context)throws Exception{
+        //TODO 从队列中读取缓存数据
+        readCahe();
+
         context.flush();
     }
     //工程出现异常的时候调用
@@ -69,6 +70,7 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
             context.channel().write(new PongWebSocketFrame(webSocketFrame.content().retain()));
             return;
         }
+
         if (!(webSocketFrame instanceof TextWebSocketFrame)){//判断是否是二进制消息
             System.out.println("不支持二进制消息");
             throw new RuntimeException(this.getClass().getName());
@@ -91,10 +93,16 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
      * @param fullHttpRequest
      */
     private void handHttpRequest(ChannelHandlerContext context,FullHttpRequest fullHttpRequest){
+
         if (!fullHttpRequest.getDecoderResult().isSuccess() ||!("websocket".equals(fullHttpRequest.headers().get("Upgrade")))){//判断是否http握手请求
             sendHttpResponse(context,fullHttpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
             return;
         }
+        NettyConfig.group.add(context.channel());
+        //TODO 为每个tcp连接做分组
+        divideGroup();
+
+
         WebSocketServerHandshakerFactory webSocketServerHandshakerFactory = new WebSocketServerHandshakerFactory(WEB_SOCKET_URL,null,false);
         webSocketServerHandshaker = webSocketServerHandshakerFactory.newHandshaker(fullHttpRequest);
         if (webSocketServerHandshaker == null){
@@ -123,5 +131,10 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
         }
 
     }
+    private void divideGroup() {
 
+    }
+    private void readCahe(){
+
+    }
 }

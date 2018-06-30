@@ -1,5 +1,7 @@
 package com.example.demo.domain;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class Result<T> {
     private Integer code;
     private String message;
@@ -27,5 +29,10 @@ public class Result<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public String toJSONString() {
+        JSONObject json = (JSONObject) JSONObject.toJSON(this);
+        return json.toJSONString();
     }
 }
