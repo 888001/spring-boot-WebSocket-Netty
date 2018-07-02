@@ -4,12 +4,12 @@
 		<title>WebSocket客户端</title>
 	<script type="text/javascript">
 		var socket;
-		if(!window.WebSocket){
-			window.WebSocket = window.MozWebSocket;
-		}
+        if(!window.WebSocket){
+            window.WebSocket = window.MozWebSocket;
+        }
 
 		if(window.WebSocket){
-			socket = new WebSocket("ws://localhost:8098/webSocket");
+			socket = new WebSocket("ws://10.167.10.19:8098/webSocket");
 			socket.onmessage = function(event){
 				var ta = document.getElementById('responseContent');
                 console.log(event.data);
