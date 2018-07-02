@@ -1,28 +1,15 @@
 package com.example.demo.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.example.demo.config.NettyConfig;
-import com.sun.xml.internal.bind.v2.TODO;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.group.ChannelMatchers;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.handler.codec.http.multipart.MemoryAttribute;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static io.netty.handler.codec.http.HttpMethod.GET;
 
 /**
  * 接受/处理/响应客户端websocke请求的核心业务处理类
@@ -42,7 +29,7 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
     //客户端与服务端断开连接的时候调用
     @Override
     public void channelInactive(ChannelHandlerContext context) throws Exception {
-        NettyConfig.group.remove(context.channel());
+        NettyConfig.remove(context.channel());
 
         System.out.println("客户端与服务端连接断开");
     }
@@ -99,7 +86,10 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
         System.out.println("服务端收到客户端的消息：" + request);
         TextWebSocketFrame textWebSocketFrame = new TextWebSocketFrame(context.channel().id() + ":" + request);
         //服务端向每个连接上来的客户端发送消息
-        NettyConfig.group.writeAndFlush(textWebSocketFrame);
+        if (null != NettyConfig.groupMap.get(request)) {
+            NettyConfig.groupMap.get(request).add(context.channel());
+        }
+
     }
 
 
@@ -115,10 +105,6 @@ public class MyWebSockeHandler extends SimpleChannelInboundHandler<Object> {
             sendHttpResponse(context, fullHttpRequest, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST));
             return;
         }
-        NettyConfig.group.add(context.channel());
-        //TODO 为每个tcp连接做分组
-        divideGroup();
-
         WebSocketServerHandshakerFactory webSocketServerHandshakerFactory = new WebSocketServerHandshakerFactory(WEB_SOCKET_URL, null, false);
         webSocketServerHandshaker = webSocketServerHandshakerFactory.newHandshaker(fullHttpRequest);
         if (webSocketServerHandshaker == null) {

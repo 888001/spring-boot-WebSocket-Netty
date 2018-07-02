@@ -99,7 +99,7 @@
     }
 
     if (window.WebSocket) {
-        socket = new WebSocket("ws://10.167.10.19:8098/webSocket");
+        socket = new WebSocket("ws://localhost:8098/webSocket");
         socket.onmessage = function (event) {
             console.log(event.data);
             changedata();
@@ -107,7 +107,7 @@
 
         socket.onopen = function (event) {
             alert("支持websocket!正在发送useId");
-            socket.send("1000");
+            socket.send("group1");
         };
 
         socket.onclose = function (event) {

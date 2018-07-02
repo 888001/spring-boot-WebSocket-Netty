@@ -21,6 +21,6 @@ public class RestController1 {
         Result result = new Result();
         result.setCode(666);
 
-        NettyConfig.group.writeAndFlush(textWebSocketFrame);
+        NettyConfig.groupMap.get("group1").writeAndFlush(textWebSocketFrame);
     }
 }
