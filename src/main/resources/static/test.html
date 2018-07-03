@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="application/javascript">
+        function connect() {
+            var socket = new SockJS('10.167.10.24:8899' + '/initJson');
+
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/showResult', function(calResult){
+                    showResult(JSON.parse(calResult.body));
+                });
+            });
+        };
+
+        connect();
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
